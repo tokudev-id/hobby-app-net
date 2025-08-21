@@ -1,0 +1,284 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HobbyApp</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/modern-style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/HobbyApp.styles.css" asp-append-version="true" />
+</head>
+
+<body>
+    <header class="modern-header">
+        <nav class="header-nav">
+            <div class="nav-container">
+                <div class="nav-brand">
+                    <a href="/" class="brand-link">
+                        <div class="brand-icon">
+                            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                            </svg>
+                        </div>
+                        <span class="brand-text">HobbyApp</span>
+                    </a>
+                </div>
+
+                <div class="nav-menu" id="navMenu">
+                    <div class="nav-links" id="navLinks">
+                        <a href="/users" class="nav-link" id="usersLink" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="9" cy="7" r="4"></circle>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                            </svg>
+                            <span>Users</span>
+                        </a>
+                        <a href="/roles" class="nav-link" id="rolesLink" style="display: none;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <path d="M9 12l2 2 4-4"></path>
+                                <path d="M21 12c-1 0-3-1-3-3s2-3 3-3 3 1 3 3-2 3-3 3"></path>
+                                <path d="M3 12c1 0 3-1 3-3s-2-3-3-3-3 1-3 3 2 3 3 3"></path>
+                                <path d="M12 3c0 1-1 3-3 3s-3-2-3-3 1-3 3-3 3 2 3 3"></path>
+                                <path d="M12 21c0-1 1-3 3-3s3 2 3 3-1 3-3 3-3-2-3-3"></path>
+                            </svg>
+                            <span>Manage Roles</span>
+                        </a>
+                    </div>
+
+                    <div class="nav-auth" id="navAuth">
+                        <!-- Logged out state -->
+                        <div class="auth-buttons" id="authButtons">
+                            <a href="/login" class="btn-ghost">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                                    <polyline points="10,17 15,12 10,7"></polyline>
+                                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                                </svg>
+                                <span>Sign In</span>
+                            </a>
+                            <a href="/register" class="btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                    stroke-width="2">
+                                    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                <span>Sign Up</span>
+                            </a>
+                        </div>
+
+                        <!-- Logged in state -->
+                        <div class="user-menu" id="userMenu" style="display: none;">
+                            <div class="user-profile" onclick="toggleUserDropdown()">
+                                <div class="user-avatar" id="userAvatar">
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                        stroke-width="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                </div>
+                                <div class="user-info">
+                                    <span class="user-name" id="userName">User</span>
+                                    <span class="user-role" id="userRole">Member</span>
+                                </div>
+                                <svg class="dropdown-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2">
+                                    <path d="M6 9l6 6 6-6"></path>
+                                </svg>
+                            </div>
+
+                            <div class="user-dropdown" id="userDropdown">
+                                <div class="dropdown-section">
+                                    <a href="#" id="profileLink" class="dropdown-item">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                            <circle cx="12" cy="7" r="4"></circle>
+                                        </svg>
+                                        <span>Profile</span>
+                                    </a>
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <div class="dropdown-section">
+                                    <button class="dropdown-item logout-btn" onclick="logout()">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                                            stroke="currentColor" stroke-width="2">
+                                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                            <polyline points="16,17 21,12 16,7"></polyline>
+                                            <line x1="21" y1="12" x2="9" y2="12"></line>
+                                        </svg>
+                                        <span>Sign Out</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="mobile-menu-btn" id="mobileMenuBtn" onclick="toggleMobileMenu()">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+            </div>
+        </nav>
+    </header>
+
+    <main role="main" class="main-content">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/message-system.js" asp-append-version="true"></script>
+    <script src="~/js/auth.js" asp-append-version="true"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    <script>
+        // Authentication state management
+        async function checkAuthState() {
+            const authButtons = document.getElementById('authButtons');
+            const userMenu = document.getElementById('userMenu');
+            const usersLink = document.getElementById('usersLink');
+
+            try {
+                // Check authentication status using the authManager
+                const isAuthenticated = await authManager.isAuthenticated();
+
+                if (isAuthenticated) {
+                    // User is logged in
+                    authButtons.style.display = 'none';
+                    userMenu.style.display = 'flex';
+                    usersLink.style.display = 'flex';
+
+                    // Show roles link for admins only
+                    const rolesLink = document.getElementById('rolesLink');
+                    if (rolesLink) {
+                        rolesLink.style.display = 'none'; // Hide by default
+                    }
+
+                    // Get user info from authManager
+                    const currentUser = await authManager.getCurrentUser();
+                    if (currentUser) {
+                        // Use email as display name if username is null/empty
+                        const displayName = currentUser.username || currentUser.email || 'User';
+                        let userName = 'User';
+                        if (currentUser.username) {
+                            userName = currentUser.username;
+                        } else if (currentUser.email) {
+                            userName = currentUser.email.split('@@')[0];
+                        }
+
+                        document.getElementById('userName').textContent = userName;
+
+                        // Display roles
+                        const roles = currentUser.roles || [];
+                        const roleText = roles.length > 0 ? roles.join(', ') : 'User';
+                        document.getElementById('userRole').textContent = roleText;
+
+                        // Update avatar with user's initials
+                        const initials = userName.split(' ').map(n => n[0]).join('').toUpperCase();
+                        document.getElementById('userAvatar').innerHTML = `<span class="avatar-text">${initials}</span>`;
+
+                        // Set profile link to user details page
+                        const profileLink = document.getElementById('profileLink');
+                        if (profileLink) {
+                            profileLink.href = `/users/details/${currentUser.id}`;
+                        }
+
+                        // Show roles link for admins
+                        if (roles.includes('Admin')) {
+                            const rolesLink = document.getElementById('rolesLink');
+                            if (rolesLink) {
+                                rolesLink.style.display = 'flex';
+                            }
+                        }
+                    }
+                } else {
+                    // User is not logged in
+                    authButtons.style.display = 'flex';
+                    userMenu.style.display = 'none';
+                    usersLink.style.display = 'none';
+
+                    const rolesLink = document.getElementById('rolesLink');
+                    if (rolesLink) {
+                        rolesLink.style.display = 'none';
+                    }
+                }
+            } catch (error) {
+                console.warn('Error checking auth state:', error);
+                // Default to logged out state on error
+                authButtons.style.display = 'flex';
+                userMenu.style.display = 'none';
+                usersLink.style.display = 'none';
+            }
+        }
+
+        function toggleUserDropdown() {
+            const dropdown = document.getElementById('userDropdown');
+            dropdown.classList.toggle('show');
+        }
+
+        function toggleMobileMenu() {
+            const navMenu = document.getElementById('navMenu');
+            const mobileBtn = document.getElementById('mobileMenuBtn');
+            navMenu.classList.toggle('show');
+            mobileBtn.classList.toggle('active');
+        }
+
+        async function logout() {
+            try {
+                // Call logout API to clear server-side cookies
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                    }
+                });
+
+                if (!response.ok) {
+                    console.warn('Logout API call failed, but continuing with client-side cleanup');
+                }
+            } catch (error) {
+                console.warn('Error calling logout API:', error);
+            }
+
+            // Clear client-side auth state
+            authManager.logout();
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function (event) {
+            const userMenu = document.getElementById('userMenu');
+            const dropdown = document.getElementById('userDropdown');
+
+            if (!userMenu.contains(event.target)) {
+                dropdown.classList.remove('show');
+            }
+        });
+
+        // Check auth state on page load
+        document.addEventListener('DOMContentLoaded', async function () {
+            await checkAuthState();
+        });
+
+        // Note: With HttpOnly cookies, we can't listen to storage changes directly
+        // The auth state will be checked when the page loads or refreshes
+    </script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

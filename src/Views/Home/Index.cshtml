@@ -1,0 +1,116 @@
+﻿@{
+    ViewData["Title"] = "Home - HobbyApp";
+}
+
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">Welcome to HobbyApp</h1>
+                <p class="lead mb-4">
+                    Discover, manage, and share your hobbies with our comprehensive user management system.
+                    Connect with fellow hobbyists and explore new interests.
+                </p>
+                @if (User.Identity?.IsAuthenticated == false)
+                {
+                    <div class="d-flex gap-3">
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-light btn-lg">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login
+                        </a>
+                        <a asp-controller="Account" asp-action="Register" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-flex gap-3">
+                        <a asp-controller="User" asp-action="Index" class="btn btn-light btn-lg">
+                            <i class="fas fa-users me-2"></i>Manage Users
+                        </a>
+                        <a asp-controller="Account" asp-action="Login" class="btn btn-outline-light btn-lg">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
+                    </div>
+                }
+            </div>
+            <div class="col-lg-6">
+                <img src="~/images/hobby-hero.svg" alt="HobbyApp" class="img-fluid"
+                    onerror="this.src='https://via.placeholder.com/600x400/007bff/white?text=HobbyApp'">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="container py-5">
+    <div class="row text-center mb-5">
+        <div class="col-12">
+            <h2 class="display-5 fw-bold">Features</h2>
+            <p class="lead text-muted">Everything you need to manage users and their hobbies</p>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-users fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">User Management</h5>
+                    <p class="card-text text-muted">
+                        Complete CRUD operations for user management with role-based access control.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-gamepad fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Hobby Tracking</h5>
+                    <p class="card-text text-muted">
+                        Each user can have multiple hobbies with different skill levels and categories.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <i class="fas fa-shield-alt fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">Secure Authentication</h5>
+                    <p class="card-text text-muted">
+                        JWT-based authentication system with secure password hashing and validation.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="bg-light py-5">
+    <div class="container">
+        <div class="row text-center">
+            <div class="col-md-3">
+                <h3 class="text-primary">100+</h3>
+                <p class="text-muted">Active Users</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="text-success">50+</h3>
+                <p class="text-muted">Hobbies Tracked</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="text-warning">99%</h3>
+                <p class="text-muted">Uptime</p>
+            </div>
+            <div class="col-md-3">
+                <h3 class="text-info">24/7</h3>
+                <p class="text-muted">Support</p>
+            </div>
+        </div>
+    </div>
+</div>

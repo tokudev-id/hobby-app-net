@@ -1,0 +1,342 @@
+@{
+    ViewData["Title"] = "Role Management";
+}
+
+<div class="modern-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Role Management</h1>
+            <div class="header-actions">
+                <a href="/users" class="btn-ghost">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5m7-7l-7 7 7 7" />
+                    </svg>
+                    Back to Users
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <!-- Users with Role Management -->
+        <div class="role-management-container">
+            <div class="users-with-roles" id="usersWithRoles">
+                <!-- Dynamic content will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check if user is admin
+            if (!await authManager.requireAdmin()) {
+                return;
+            }
+
+            await loadUsersWithRoles();
+        });
+
+        async function loadUsersWithRoles() {
+            try {
+                const usersResponse = await fetch('/api/users', {
+                    credentials: 'include'
+                });
+
+                if (!usersResponse.ok) {
+                    throw new Error('Failed to load users');
+                }
+
+                const usersData = await usersResponse.json();
+                const users = usersData.data?.items || usersData.items || [];
+
+                const rolesResponse = await fetch('/api/roles', {
+                    credentials: 'include'
+                });
+
+                if (!rolesResponse.ok) {
+                    throw new Error('Failed to load roles');
+                }
+
+                const roles = await rolesResponse.json();
+
+                renderUsersWithRoles(users, roles);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('usersWithRoles').innerHTML =
+                    '<div class="error-message">Error loading users and roles</div>';
+            }
+        }
+
+        async function renderUsersWithRoles(users, roles) {
+            const container = document.getElementById('usersWithRoles');
+
+            if (!users.length) {
+                container.innerHTML = '<div class="no-data">No users found</div>';
+                return;
+            }
+
+            let html = '<div class="users-grid">';
+
+            for (const user of users) {
+                // User roles are now included in the user data
+                const userRoles = user.roles || [];
+
+                html += `
+                                                <div class="user-role-card">
+                                                    <div class="user-info-card">
+                                                        <div class="user-avatar-card">
+                                                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=random&color=fff&size=50" alt="${user.fullName}">
+                                                        </div>
+                                                        <div class="user-details">
+                                                            <h3 class="user-name">${user.fullName}</h3>
+                                                            <p class="user-email">${user.email}</p>
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="user-roles">
+                                                        <h4>Current Roles:</h4>
+                                                        <div class="role-tags">
+                                                            ${userRoles.map(role =>
+                    `<span class="role-tag role-${role.name.toLowerCase()}" data-role-id="${role.id}">
+                                                                    ${role.name}
+                                                                    <button class="remove-role-btn" onclick="unassignRole(${user.id}, ${role.id})" title="Remove role">
+                                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                                        </svg>
+                                                                    </button>
+                                                                </span>`
+                ).join('')}
+                                                            ${userRoles.length === 0 ? '<span class="no-roles">No roles assigned</span>' : ''}
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="role-actions">
+                                                        <select class="role-select" id="roleSelect_${user.id}">
+                                                            <option value="">Select role to assign...</option>
+                                                            ${roles.filter(role => !userRoles.some(ur => ur.id === role.id))
+                        .map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
+                                                        </select>
+                                                        <button class="btn-primary assign-role-btn" onclick="assignRole(${user.id})">
+                                                            Assign Role
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            `;
+            }
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function assignRole(userId) {
+            const roleSelect = document.getElementById(`roleSelect_${userId}`);
+            const roleId = roleSelect.value;
+
+            if (!roleId) {
+                alert('Please select a role to assign');
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/roles/assign', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        roleId: parseInt(roleId)
+                    })
+                });
+
+                if (response.ok) {
+                    // Reload the data to reflect changes
+                    await loadUsersWithRoles();
+                    messageSystem.success('Role assigned successfully');
+                } else {
+                    const error = await response.json();
+                    messageSystem.error(error.message || 'Failed to assign role');
+                }
+            } catch (error) {
+                console.error('Error assigning role:', error);
+                messageSystem.error('Error assigning role');
+            }
+        }
+
+        async function unassignRole(userId, roleId) {
+            if (!confirm('Are you sure you want to remove this role?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/api/roles/unassign', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        userId: parseInt(userId),
+                        roleId: parseInt(roleId)
+                    })
+                });
+
+                if (response.ok) {
+                    // Reload the data to reflect changes
+                    await loadUsersWithRoles();
+                    messageSystem.success('Role removed successfully');
+                } else {
+                    const error = await response.json();
+                    messageSystem.error(error.message || 'Failed to remove role');
+                }
+            } catch (error) {
+                console.error('Error removing role:', error);
+                messageSystem.error('Error removing role');
+            }
+        }
+
+
+    </script>
+}
+
+<style>
+    .role-management-container {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .users-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 24px;
+    }
+
+    .user-role-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        border: 1px solid #e5e7eb;
+    }
+
+    .user-info-card {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 16px;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .user-avatar img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        margin-right: 12px;
+    }
+
+    .user-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 4px 0;
+    }
+
+    .user-email {
+        color: #6b7280;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .user-roles h4 {
+        font-size: 14px;
+        font-weight: 600;
+        color: #374151;
+        margin: 0 0 12px 0;
+    }
+
+    .role-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+
+    .role-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        color: white;
+        position: relative;
+    }
+
+    .role-tag.role-admin {
+        background: #dc2626;
+    }
+
+    .role-tag.role-user {
+        background: #059669;
+    }
+
+    .remove-role-btn {
+        background: none;
+        border: none;
+        color: rgba(255, 255, 255, 0.8);
+        margin-left: 6px;
+        cursor: pointer;
+        padding: 2px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .remove-role-btn:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .no-roles {
+        color: #9ca3af;
+        font-style: italic;
+        font-size: 14px;
+    }
+
+    .role-actions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+    }
+
+    .role-select {
+        flex: 1;
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+    }
+
+    .assign-role-btn {
+        padding: 8px 16px;
+        font-size: 14px;
+        white-space: nowrap;
+    }
+
+    .no-data,
+    .error-message {
+        text-align: center;
+        padding: 40px;
+        color: #6b7280;
+        font-style: italic;
+    }
+
+    .error-message {
+        color: #dc2626;
+    }
+</style>

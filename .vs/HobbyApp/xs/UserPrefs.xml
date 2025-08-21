@@ -1,0 +1,31 @@
+﻿<Properties StartupConfiguration="{B8F3C6E0-1234-5678-9ABC-DEF012345678}|https">
+  <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.HobbyApp PreferredExecutionTarget="/Applications/Google Chrome.app" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="src/Application/Services/base/User/UserService.cs">
+    <Files>
+      <File FileName="src/Application/Services/base/User/UserService.cs" Line="20" Column="30" />
+      <File FileName="src/Application/Services/query/User/IUserQueryService.cs" Line="3" Column="52" />
+      <File FileName="src/Application/Services/query/User/UserQueryService.cs" Line="8" Column="50" />
+      <File FileName="src/Application/Services/base/User/IUserService.cs" Line="1" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="HobbyApp" expanded="True">
+            <Node name="HobbyApp" expanded="True">
+              <Node name="src" expanded="True">
+                <Node name="Application" selected="True" />
+              </Node>
+              <Node name="appsettings.json" expanded="True" />
+            </Node>
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+</Properties>

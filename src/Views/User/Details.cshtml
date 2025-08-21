@@ -1,0 +1,254 @@
+@model HobbyApp.Application.DTOs.UserDetailDto
+@{
+    ViewData["Title"] = "User Details";
+}
+
+<div class="modern-container">
+    <div class="page-header">
+        <div class="header-content">
+            <a asp-controller="User" asp-action="Index" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                Back to List
+            </a>
+            <div class="header-actions">
+                <a asp-controller="User" asp-action="Edit" asp-route-id="@Model.Id" class="btn-primary"
+                    id="editUserHeaderBtn" style="display:none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                    </svg>
+                    Edit User
+                </a>
+                <button class="btn-danger" id="deleteUserHeaderBtn" style="display:none;"
+                    onclick="deleteUser(@Model.Id, '@Model.FullName')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="3,6 5,6 21,6"></polyline>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        <line x1="10" y1="11" x2="10" y2="17"></line>
+                        <line x1="14" y1="11" x2="14" y2="17"></line>
+                    </svg>
+                    Delete User
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="user-detail-card">
+            <div class="user-detail-header">
+                <div class="user-avatar-large">
+                    <img src="https://ui-avatars.com/api/?name=@(Uri.EscapeDataString(Model.FullName))&background=random&color=fff&size=120"
+                        alt="@Model.FullName">
+                </div>
+                <div class="user-basic-info">
+                    <h2 class="user-detail-name">@Model.FullName</h2>
+                    <p class="user-detail-username">@@@Model.Username</p>
+                    <p class="user-detail-email">@Model.Email</p>
+                    <div class="user-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Hobbies.Count</span>
+                            <span class="stat-label">Hobbies</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.CreatedAt.ToString("MMM yyyy")</span>
+                            <span class="stat-label">Joined</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-detail-content">
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                        </svg>
+                        Hobbies & Interests
+                    </h3>
+
+                    @if (Model.Hobbies.Any())
+                    {
+                        <div class="hobbies-grid">
+                            @foreach (var hobby in Model.Hobbies)
+                            {
+                                <div class="hobby-card">
+                                    <div class="hobby-icon">
+                                        @switch (hobby.Name.ToLower())
+                                        {
+                                            case "reading":
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                                                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                                                </svg>
+                                                break;
+                                            case "music":
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <path d="M9 18V5l12-2v13"></path>
+                                                    <circle cx="6" cy="18" r="3"></circle>
+                                                    <circle cx="18" cy="16" r="3"></circle>
+                                                </svg>
+                                                break;
+                                            case "programming":
+                                            case "coding":
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <polyline points="16,18 22,12 16,6"></polyline>
+                                                    <polyline points="8,6 2,12 8,18"></polyline>
+                                                </svg>
+                                                break;
+                                            default:
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2">
+                                                    <circle cx="12" cy="12" r="10"></circle>
+                                                    <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
+                                                    <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                                    <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                                                </svg>
+                                                break;
+                                        }
+                                    </div>
+                                    <div class="hobby-info">
+                                        <h4 class="hobby-name">@hobby.Name</h4>
+                                        <span class="hobby-level hobby-level-@hobby.Level.ToString().ToLower()">
+                                            @hobby.Level
+                                        </span>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <circle cx="12" cy="12" r="10"></circle>
+                                <path d="M16 16s-1.5-2-4-2-4 2-4 2"></path>
+                                <line x1="9" y1="9" x2="9.01" y2="9"></line>
+                                <line x1="15" y1="9" x2="15.01" y2="9"></line>
+                            </svg>
+                            <p>No hobbies added yet</p>
+                        </div>
+                    }
+                </div>
+
+                <div class="detail-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Account Information
+                    </h3>
+
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <span class="info-label">Full Name</span>
+                            <span class="info-value">@Model.FullName</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Username</span>
+                            <span class="info-value">@Model.Username</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Email</span>
+                            <span class="info-value">@Model.Email</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Member Since</span>
+                            <span class="info-value">@Model.CreatedAt.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Last Updated</span>
+                            <span class="info-value">@Model.UpdatedAt.ToString("MMMM dd, yyyy")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Ensure user is authenticated
+            if (!await authManager.requireAuth()) {
+                return;
+            }
+
+            // Show success/error messages
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>messageSystem.success('@Html.Raw(TempData["SuccessMessage"])');</text>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <text>messageSystem.error('@Html.Raw(TempData["ErrorMessage"])');</text>
+        }
+
+                                                    // Determine if current user can edit (owner or admin)
+                                                    const me = await authManager.getCurrentUser();
+            const isAdmin = me && (Array.isArray(me.roles) ? me.roles.includes('Admin') : me.roles === 'Admin');
+            const isOwner = me && me.id === @Model.Id;
+
+            if (isAdmin || isOwner) {
+                const editBtn = document.getElementById('editUserHeaderBtn');
+                if (editBtn) {
+                    editBtn.style.display = 'inline-flex';
+                }
+            }
+
+            // Show delete button only for admins (but not for their own account)
+            if (isAdmin) {
+                const deleteBtn = document.getElementById('deleteUserHeaderBtn');
+                if (deleteBtn) {
+                    deleteBtn.style.display = 'inline-flex';
+
+                    // Disable button if it's the user's own account
+                    if (me.id === @Model.Id) {
+                        deleteBtn.disabled = true;
+                        deleteBtn.classList.add('btn-disabled');
+                        deleteBtn.title = 'You cannot delete your own account';
+                        deleteBtn.onclick = function () { return false; };
+                    }
+                }
+            }
+        });
+
+        async function deleteUser(userId, userName) {
+            if (!confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE',
+                    credentials: 'include',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    messageSystem.success(`User "${userName}" deleted successfully`);
+                    // Redirect to users list after successful deletion
+                    window.location.href = '/users';
+                } else {
+                    const error = await response.json();
+                    messageSystem.error(error.message || 'Failed to delete user');
+                }
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                messageSystem.error('Error deleting user. Please try again.');
+            }
+        }
+    </script>
+}

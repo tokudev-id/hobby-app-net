@@ -1,0 +1,396 @@
+@model HobbyApp.Application.DTOs.CreateUserCommandDto
+@{
+    ViewData["Title"] = "Create User";
+}
+
+<div class="modern-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Create New User</h1>
+        </div>
+        <div class="header-subactions">
+            <a href="/users" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="user-form-card">
+            <form method="post" class="user-form">
+                @Html.AntiForgeryToken()
+                
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="form-error">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Basic Information
+                    </h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="Username" class="form-label">Username</label>
+                            <input type="text" class="form-input" id="Username" name="Username" 
+                                   value="@Model?.Username" required maxlength="50" 
+                                   placeholder="Enter username" />
+                            <span asp-validation-for="Username" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="FullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="FullName" name="FullName" 
+                                   value="@Model?.FullName" required maxlength="100" 
+                                   placeholder="Enter full name" />
+                            <span asp-validation-for="FullName" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Email" class="form-label">Email Address</label>
+                            <input type="email" class="form-input" id="Email" name="Email" 
+                                   value="@Model?.Email" required maxlength="255" 
+                                   placeholder="Enter email address" />
+                            <span asp-validation-for="Email" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Password" class="form-label">Password</label>
+                            <div class="password-input-wrapper">
+                                <input type="password" class="form-input" id="Password" name="Password" 
+                                       required minlength="6" placeholder="Enter password" />
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('Password')">
+                                    <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                        <circle cx="12" cy="12" r="3"></circle>
+                                    </svg>
+                                    <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                        <line x1="1" y1="1" x2="23" y2="23"></line>
+                                    </svg>
+                                </button>
+                            </div>
+                            <span asp-validation-for="Password" class="form-validation"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                            <path d="M22 11l-3-3 3-3"></path>
+                        </svg>
+                        Role Assignment
+                    </h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Assign Roles</label>
+                            <div class="checkbox-group">
+                                @if (ViewBag.AvailableRoles != null)
+                                {
+                                    @foreach (var role in (List<SelectListItem>)ViewBag.AvailableRoles)
+                                    {
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" 
+                                                   id="role_@role.Value" 
+                                                   name="RoleIds" 
+                                                   value="@role.Value" 
+                                                   @(Model?.RoleIds?.Contains(int.Parse(role.Value)) == true ? "checked" : "") />
+                                            <label for="role_@role.Value" class="checkbox-label">@role.Text</label>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="form-info">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span>Select one or more roles for this user. If none selected, 'User' role will be assigned by default.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                        </svg>
+                        Hobbies & Interests
+                    </h3>
+                    
+                    <div id="hobbiesContainer" class="hobbies-container">
+                        @if (Model?.Hobbies?.Any() == true)
+                        {
+                            @for (int i = 0; i < Model.Hobbies.Count; i++)
+                            {
+                                <div class="hobby-item">
+                                    <div class="hobby-fields">
+                                        <div class="form-group">
+                                            <label class="form-label">Hobby Name</label>
+                                            <input type="text" name="Hobbies[@i].Name" 
+                                                   value="@Model.Hobbies[i].Name" 
+                                                   class="form-input" placeholder="e.g., Reading, Coding, Music" />
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Skill Level</label>
+                                            <select name="Hobbies[@i].Level" class="form-select">
+                                                <option value="1" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Beginner)">Beginner</option>
+                                                <option value="2" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Intermediate)">Intermediate</option>
+                                                <option value="3" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Expert)">Expert</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="remove-hobby-btn" onclick="removeHobby(this)">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <button type="button" class="add-hobby-btn" onclick="addHobby()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Hobby
+                    </button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                        Create User
+                    </button>
+                    <a href="/users" class="btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Check if user has permission to create users (admin only)
+        document.addEventListener('DOMContentLoaded', function () {
+            if (!authManager.requireAdmin()) {
+                return;
+            }
+        });
+
+        let hobbyIndex = @(Model?.Hobbies?.Count ?? 0);
+
+        function addHobby() {
+            const container = document.getElementById('hobbiesContainer');
+            const hobbyItem = document.createElement('div');
+            hobbyItem.className = 'hobby-item';
+            hobbyItem.innerHTML = `
+                <div class="hobby-fields">
+                    <div class="form-group">
+                        <label class="form-label">Hobby Name</label>
+                        <input type="text" name="Hobbies[${hobbyIndex}].Name" 
+                               class="form-input" placeholder="e.g., Reading, Coding, Music" 
+                               onblur="validateHobbyName(this)" oninput="clearHobbyError(this)" />
+                        <div class="validation-error" style="display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Skill Level</label>
+                        <select name="Hobbies[${hobbyIndex}].Level" class="form-select">
+                            <option value="1" selected>Beginner</option>
+                            <option value="2">Intermediate</option>
+                            <option value="3">Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="remove-hobby-btn" onclick="removeHobby(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(hobbyItem);
+            hobbyIndex++;
+        }
+
+        function removeHobby(button) {
+            button.closest('.hobby-item').remove();
+            updateSaveButtonState();
+        }
+
+        // Add first hobby by default if none exist
+        document.addEventListener('DOMContentLoaded', function() {
+            const hobbiesContainer = document.getElementById('hobbiesContainer');
+            if (hobbyIndex === 0 && hobbiesContainer.children.length === 0) {
+                addHobby();
+            }
+        });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const wrapper = input.parentElement;
+            const eyeIcon = wrapper.querySelector('.eye-icon');
+            const eyeOffIcon = wrapper.querySelector('.eye-off-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+            }
+        }
+
+        function validateHobbyName(input) {
+            const hobbyName = input.value.trim();
+            const errorDiv = input.nextElementSibling;
+            
+            // Check if empty
+            if (!hobbyName) {
+                showHobbyError(input, errorDiv, 'Hobby name is required');
+                updateSaveButtonState();
+                return false;
+            }
+            
+            // Check for duplicates (case-sensitive)
+            const allHobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            const duplicates = Array.from(allHobbyInputs)
+                .filter(otherInput => otherInput !== input && otherInput.value.trim() === hobbyName);
+            
+            if (duplicates.length > 0) {
+                showHobbyError(input, errorDiv, 'This hobby name already exists (case-sensitive)');
+                updateSaveButtonState();
+                return false;
+            }
+            
+            clearHobbyError(input);
+            updateSaveButtonState();
+            return true;
+        }
+
+        function clearHobbyError(input) {
+            const errorDiv = input.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('validation-error')) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+                input.classList.remove('error');
+                input.classList.add('valid');
+            }
+            updateSaveButtonState();
+        }
+
+        function showHobbyError(input, errorDiv, message) {
+            if (errorDiv && errorDiv.classList.contains('validation-error')) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                input.classList.add('error');
+                input.classList.remove('valid');
+            }
+        }
+
+        function updateSaveButtonState() {
+            const saveButton = document.querySelector('button[type="submit"]');
+            if (!saveButton) return;
+            
+            const hobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            let hasErrors = false;
+            
+            // Check for validation errors
+            const errorDivs = document.querySelectorAll('.validation-error');
+            errorDivs.forEach(errorDiv => {
+                if (errorDiv.style.display !== 'none' && errorDiv.textContent.trim() !== '') {
+                    hasErrors = true;
+                }
+            });
+            
+            // Check for empty hobby names
+            hobbyInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    hasErrors = true;
+                }
+            });
+            
+            // Check for duplicates
+            const hobbyNames = Array.from(hobbyInputs).map(input => input.value.trim()).filter(name => name !== '');
+            const uniqueNames = new Set(hobbyNames);
+            if (hobbyNames.length !== uniqueNames.size) {
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                saveButton.disabled = true;
+                saveButton.classList.add('btn-disabled');
+                saveButton.title = 'Please fix validation errors before saving';
+            } else {
+                saveButton.disabled = false;
+                saveButton.classList.remove('btn-disabled');
+                saveButton.title = '';
+            }
+        }
+
+        function validateAllHobbies() {
+            const hobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            let isValid = true;
+            
+            hobbyInputs.forEach(input => {
+                if (!validateHobbyName(input)) {
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Add form submission validation
+        document.addEventListener('DOMContentLoaded', function() {
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateAllHobbies()) {
+                        e.preventDefault();
+                        messageSystem.error('Please fix the hobby validation errors before submitting.');
+                        return false;
+                    }
+                });
+            }
+            
+            // Initial button state check
+            setTimeout(updateSaveButtonState, 100);
+        });
+    </script>
+}

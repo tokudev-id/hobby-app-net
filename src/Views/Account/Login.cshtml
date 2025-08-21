@@ -1,0 +1,270 @@
+
+
+@model HobbyApp.Models.LoginViewModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="modern-container">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Welcome back</h1>
+                <p class="auth-subtitle">Sign in to your account to continue</p>
+            </div>
+            <div class="auth-body">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="auth-error">
+                        <i class="fas fa-exclamation-triangle"></i> @ViewBag.ErrorMessage
+                    </div>
+                }
+
+                <form id="loginForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="Username" class="form-label">Username</label>
+                        <input type="text" class="form-input" id="Username" name="Username"
+                               value="@Model?.Username" required maxlength="50" placeholder="Enter your username" />
+                        <div class="validation-error" id="UsernameError" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Password" class="form-label">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="Password" name="Password"
+                                   required minlength="6" maxlength="100" placeholder="Enter your password" />
+                            <button type="button" class="password-toggle-btn" onclick="togglePassword('Password')">
+                                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="validation-error" id="PasswordError" style="display: none;"></div>
+                    </div>
+
+                    <button type="submit" class="auth-button">
+                        <span class="button-text">Sign in</span>
+                        <div class="button-loader" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+
+                    @Html.AntiForgeryToken()
+                </form>
+
+                <div class="demo-credentials">
+                    <h6 class="demo-title">Demo Credentials</h6>
+                    <div class="demo-item">
+                        <span class="demo-label">Username:</span>
+                        <span class="demo-value">admin</span>
+                    </div>
+                    <div class="demo-item">
+                        <span class="demo-label">Password:</span>
+                        <span class="demo-value">Admin123!</span>
+                    </div>
+                </div>
+
+                <div class="auth-footer">
+                    <p>Don't have an account? 
+                        <a asp-controller="Account" asp-action="Register" class="auth-link">Create one</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+            document.addEventListener('DOMContentLoaded', async function () {
+        // Check if user is already logged in and redirect to users page
+        const isAuthenticated = await authManager.isAuthenticated();
+        if (isAuthenticated) {
+            // User is authenticated, redirect to users page
+            window.location.href = '/users';
+            return;
+        }
+
+        const form = document.getElementById('loginForm');
+        const usernameInput = document.getElementById('Username');
+        const passwordInput = document.getElementById('Password');
+        usernameInput.focus();
+
+        // Add validation event listeners
+        usernameInput.addEventListener('blur', () => validateUsername());
+        passwordInput.addEventListener('blur', () => validatePassword());
+        usernameInput.addEventListener('input', () => clearValidationError('UsernameError'));
+        passwordInput.addEventListener('input', () => clearValidationError('PasswordError'));
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                
+                // Validate form before submission
+                const isUsernameValid = validateUsername();
+                const isPasswordValid = validatePassword();
+                
+                if (!isUsernameValid || !isPasswordValid) {
+                    return;
+                }
+                
+                const submitBtn = form.querySelector('.auth-button');
+                const buttonText = submitBtn.querySelector('.button-text');
+                const buttonLoader = submitBtn.querySelector('.button-loader');
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                buttonText.style.display = 'none';
+                buttonLoader.style.display = 'flex';
+                
+                const payload = {
+                    username: usernameInput.value,
+                    password: passwordInput.value,
+                    __RequestVerificationToken: document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                };
+
+                try {
+                    console.log('Sending login request:', payload);
+                    const res = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include' // Include cookies
+                    });
+                    console.log('Login response status:', res.status);
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        console.error('Login error:', err);
+                        showError(err.message || 'Login failed');
+                        return;
+                    }
+
+                    const data = await res.json();
+                    console.log('Login response data:', data);
+
+                    // Token is now stored in HttpOnly cookies by the server
+                    // No need to extract token from response or save to localStorage
+
+                    // Show success state briefly before redirect
+                    buttonText.textContent = 'Success!';
+                    buttonText.style.display = 'block';
+                    buttonLoader.style.display = 'none';
+
+                    setTimeout(() => {
+                        window.location.href = '/users';
+                    }, 500);
+                    
+                } catch (err) {
+                    console.error('Login network error:', err);
+                    showError('Network error: ' + err.message);
+                } finally {
+                    // Reset button state if there was an error
+                    if (submitBtn.disabled) {
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            buttonText.textContent = 'Sign in';
+                            buttonText.style.display = 'block';
+                            buttonLoader.style.display = 'none';
+                        }, 1000);
+                    }
+                }
+            });
+            
+            function showError(message) {
+                // Remove existing error
+                const existingError = document.querySelector('.auth-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Create new error
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'auth-error';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                
+                // Insert after auth-body
+                const authBody = document.querySelector('.auth-body');
+                authBody.insertBefore(errorDiv, authBody.firstChild);
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const wrapper = input.parentElement;
+            const eyeIcon = wrapper.querySelector('.eye-icon');
+            const eyeOffIcon = wrapper.querySelector('.eye-off-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+            }
+        }
+
+        function validateUsername() {
+            const username = document.getElementById('Username').value.trim();
+            const errorElement = document.getElementById('UsernameError');
+            
+            if (!username) {
+                showValidationError('UsernameError', 'Username is required');
+                return false;
+            }
+            
+            if (username.length > 50) {
+                showValidationError('UsernameError', 'Username cannot exceed 50 characters');
+                return false;
+            }
+            
+            clearValidationError('UsernameError');
+            return true;
+        }
+
+        function validatePassword() {
+            const password = document.getElementById('Password').value;
+            const errorElement = document.getElementById('PasswordError');
+            
+            if (!password) {
+                showValidationError('PasswordError', 'Password is required');
+                return false;
+            }
+            
+            if (password.length < 6) {
+                showValidationError('PasswordError', 'Password must be at least 6 characters long');
+                return false;
+            }
+            
+            if (password.length > 100) {
+                showValidationError('PasswordError', 'Password cannot exceed 100 characters');
+                return false;
+            }
+            
+            clearValidationError('PasswordError');
+            return true;
+        }
+
+        function showValidationError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearValidationError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+    </script>
+}

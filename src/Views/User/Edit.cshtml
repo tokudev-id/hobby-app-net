@@ -1,0 +1,352 @@
+@model HobbyApp.Application.DTOs.UpdateUserCommandDto
+@{
+    ViewData["Title"] = "Edit User";
+}
+
+<div class="modern-container">
+    <div class="page-header">
+        <div class="header-content">
+            <h1 class="page-title">Edit User</h1>
+        </div>
+        <div class="header-subactions">
+            <a href="/users" class="btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                Back to List
+            </a>
+            <a href="/users/details/@Model.Id" class="btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+                View Details
+            </a>
+        </div>
+    </div>
+
+    <div class="content-area">
+        <div class="user-form-card">
+            <form method="post" class="user-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" asp-for="Id" />
+                
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="form-error">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                            <line x1="12" y1="9" x2="12" y2="13"></line>
+                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                        </svg>
+                        @TempData["ErrorMessage"]
+                    </div>
+                }
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        Basic Information
+                    </h3>
+                    
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label for="Username" class="form-label">Username</label>
+                            <input type="text" class="form-input" id="Username" name="Username" 
+                                   value="@Model.Username" required maxlength="50" 
+                                   placeholder="Enter username" />
+                            <span asp-validation-for="Username" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="FullName" class="form-label">Full Name</label>
+                            <input type="text" class="form-input" id="FullName" name="FullName" 
+                                   value="@Model.FullName" required maxlength="100" 
+                                   placeholder="Enter full name" />
+                            <span asp-validation-for="FullName" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="Email" class="form-label">Email Address</label>
+                            <input type="email" class="form-input" id="Email" name="Email" 
+                                   value="@Model.Email" required maxlength="255" 
+                                   placeholder="Enter email address" />
+                            <span asp-validation-for="Email" class="form-validation"></span>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="form-info">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="12" cy="12" r="10"></circle>
+                                    <line x1="12" y1="16" x2="12" y2="12"></line>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                                </svg>
+                                <span>Password cannot be changed here. Contact administrator if needed.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h3 class="section-title">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path d="M12 1v6m0 6v6m11-7h-6m-6 0H1"></path>
+                        </svg>
+                        Hobbies & Interests
+                    </h3>
+                    
+                    <div id="hobbiesContainer" class="hobbies-container">
+                        @if (Model.Hobbies?.Any() == true)
+                        {
+                            @for (int i = 0; i < Model.Hobbies.Count; i++)
+                            {
+                                <div class="hobby-item">
+                                    <div class="hobby-fields">
+                                        <div class="form-group">
+                                            <label class="form-label">Hobby Name</label>
+                                            <input type="text" name="Hobbies[@i].Name" 
+                                                   value="@Model.Hobbies[i].Name" 
+                                                   class="form-input" placeholder="e.g., Reading, Coding, Music" 
+                                                   onblur="validateHobbyName(this)" oninput="clearHobbyError(this)" />
+                                            <div class="validation-error" style="display: none;"></div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label class="form-label">Skill Level</label>
+                                            <select name="Hobbies[@i].Level" class="form-select">
+                                                <option value="1" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Beginner)">Beginner</option>
+                                                <option value="2" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Intermediate)">Intermediate</option>
+                                                <option value="3" selected="@(Model.Hobbies[i].Level == HobbyApp.Domain.Entities.HobbyLevel.Expert)">Expert</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <button type="button" class="remove-hobby-btn" onclick="removeHobby(this)">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                </div>
+                            }
+                        }
+                    </div>
+
+                    <button type="button" class="add-hobby-btn" onclick="addHobby()">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                        Add Hobby
+                    </button>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                        </svg>
+                        Update User
+                    </button>
+                    <a href="/users/details/@Model.Id" class="btn-secondary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                        Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Check if user has permission to edit this user
+        document.addEventListener('DOMContentLoaded', function () {
+            const userId = @Model.Id;
+            if (!authManager.canAccessUserData(userId)) {
+                @* alert('Access denied. You can only edit your own profile.');
+                window.location.href = '/users';
+                return; *@
+            }
+        });
+
+        let hobbyIndex = @(Model.Hobbies?.Count ?? 0);
+
+        function addHobby() {
+            const container = document.getElementById('hobbiesContainer');
+            const hobbyItem = document.createElement('div');
+            hobbyItem.className = 'hobby-item';
+            hobbyItem.innerHTML = `
+                <div class="hobby-fields">
+                    <div class="form-group">
+                        <label class="form-label">Hobby Name</label>
+                        <input type="text" name="Hobbies[${hobbyIndex}].Name" 
+                               class="form-input" placeholder="e.g., Reading, Coding, Music" 
+                               onblur="validateHobbyName(this)" oninput="clearHobbyError(this)" />
+                        <div class="validation-error" style="display: none;"></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Skill Level</label>
+                        <select name="Hobbies[${hobbyIndex}].Level" class="form-select">
+                            <option value="1" selected>Beginner</option>
+                            <option value="2">Intermediate</option>
+                            <option value="3">Expert</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" class="remove-hobby-btn" onclick="removeHobby(this)">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            `;
+            container.appendChild(hobbyItem);
+            hobbyIndex++;
+        }
+
+        function removeHobby(button) {
+            button.closest('.hobby-item').remove();
+            updateSaveButtonState();
+        }
+
+        function validateHobbyName(input) {
+            const hobbyName = input.value.trim();
+            const errorDiv = input.nextElementSibling;
+            
+            // Check if empty
+            if (!hobbyName) {
+                showHobbyError(input, errorDiv, 'Hobby name is required');
+                updateSaveButtonState();
+                return false;
+            }
+            
+            // Check for duplicates (case-sensitive)
+            const allHobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            const duplicates = Array.from(allHobbyInputs)
+                .filter(otherInput => otherInput !== input && otherInput.value.trim() === hobbyName);
+            
+            if (duplicates.length > 0) {
+                showHobbyError(input, errorDiv, 'This hobby name already exists (case-sensitive)');
+                updateSaveButtonState();
+                return false;
+            }
+            
+            clearHobbyError(input);
+            updateSaveButtonState();
+            return true;
+        }
+
+        function clearHobbyError(input) {
+            const errorDiv = input.nextElementSibling;
+            if (errorDiv && errorDiv.classList.contains('validation-error')) {
+                errorDiv.style.display = 'none';
+                errorDiv.textContent = '';
+                input.classList.remove('error');
+                input.classList.add('valid');
+            }
+            updateSaveButtonState();
+        }
+
+        function showHobbyError(input, errorDiv, message) {
+            if (errorDiv && errorDiv.classList.contains('validation-error')) {
+                errorDiv.textContent = message;
+                errorDiv.style.display = 'block';
+                input.classList.add('error');
+                input.classList.remove('valid');
+            }
+        }
+
+        function updateSaveButtonState() {
+            const saveButton = document.querySelector('button[type="submit"]');
+            if (!saveButton) return;
+            
+            const hobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            let hasErrors = false;
+            
+            // Check for validation errors
+            const errorDivs = document.querySelectorAll('.validation-error');
+            errorDivs.forEach(errorDiv => {
+                if (errorDiv.style.display !== 'none' && errorDiv.textContent.trim() !== '') {
+                    hasErrors = true;
+                }
+            });
+            
+            // Check for empty hobby names
+            hobbyInputs.forEach(input => {
+                if (!input.value.trim()) {
+                    hasErrors = true;
+                }
+            });
+            
+            // Check for duplicates
+            const hobbyNames = Array.from(hobbyInputs).map(input => input.value.trim()).filter(name => name !== '');
+            const uniqueNames = new Set(hobbyNames);
+            if (hobbyNames.length !== uniqueNames.size) {
+                hasErrors = true;
+            }
+            
+            if (hasErrors) {
+                saveButton.disabled = true;
+                saveButton.classList.add('btn-disabled');
+                saveButton.title = 'Please fix validation errors before saving';
+            } else {
+                saveButton.disabled = false;
+                saveButton.classList.remove('btn-disabled');
+                saveButton.title = '';
+            }
+        }
+
+        function validateAllHobbies() {
+            const hobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            let isValid = true;
+            
+            hobbyInputs.forEach(input => {
+                if (!validateHobbyName(input)) {
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+
+        // Add first hobby by default if none exist
+        document.addEventListener('DOMContentLoaded', function() {
+            if (hobbyIndex === 0) {
+                addHobby();
+            }
+
+            // Add form submission validation
+            const form = document.querySelector('form');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (!validateAllHobbies()) {
+                        e.preventDefault();
+                        messageSystem.error('Please fix the hobby validation errors before submitting.');
+                        return false;
+                    }
+                });
+            }
+
+            // Add validation to existing hobby inputs
+            const existingHobbyInputs = document.querySelectorAll('input[name*="Hobbies"][name*="Name"]');
+            existingHobbyInputs.forEach(input => {
+                input.addEventListener('blur', function() {
+                    validateHobbyName(this);
+                });
+                input.addEventListener('input', function() {
+                    clearHobbyError(this);
+                });
+            });
+
+            // Initial button state check
+            setTimeout(updateSaveButtonState, 100);
+        });
+    </script>
+}

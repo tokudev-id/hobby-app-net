@@ -1,0 +1,373 @@
+@model HobbyApp.Models.RegisterViewModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="modern-container">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h1 class="auth-title">Create Account</h1>
+                <p class="auth-subtitle">Join HobbyApp to manage your hobbies</p>
+            </div>
+            <div class="auth-body">
+                @if (ViewBag.ErrorMessage != null)
+                {
+                    <div class="auth-error">
+                        <i class="fas fa-exclamation-triangle"></i> @ViewBag.ErrorMessage
+                    </div>
+                }
+
+                <form id="registerForm" class="auth-form">
+                    <div class="form-group">
+                        <label for="Username" class="form-label">Username</label>
+                        <input type="text" class="form-input" id="Username" name="Username"
+                               value="@Model?.Username" required maxlength="50" placeholder="Choose a username" 
+                               pattern="^[a-zA-Z0-9_]+$" />
+                        <div class="validation-error" id="UsernameError" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="FullName" class="form-label">Full Name</label>
+                        <input type="text" class="form-input" id="FullName" name="FullName"
+                               value="@Model?.FullName" required maxlength="100" placeholder="Enter your full name" />
+                        <div class="validation-error" id="FullNameError" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Email" class="form-label">Email</label>
+                        <input type="email" class="form-input" id="Email" name="Email"
+                               value="@Model?.Email" required maxlength="255" placeholder="Enter your email address" />
+                        <div class="validation-error" id="EmailError" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="Password" class="form-label">Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="Password" name="Password"
+                                   required minlength="6" maxlength="100" placeholder="Create a strong password" />
+                            <button type="button" class="password-toggle-btn" onclick="togglePassword('Password')">
+                                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="validation-error" id="PasswordError" style="display: none;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ConfirmPassword" class="form-label">Confirm Password</label>
+                        <div class="password-input-wrapper">
+                            <input type="password" class="form-input" id="ConfirmPassword" name="ConfirmPassword"
+                                   required minlength="6" maxlength="100" placeholder="Confirm your password" />
+                            <button type="button" class="password-toggle-btn" onclick="togglePassword('ConfirmPassword')">
+                                <svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                                <svg class="eye-off-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display: none;">
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                                </svg>
+                            </button>
+                        </div>
+                        <div class="validation-error" id="ConfirmPasswordError" style="display: none;"></div>
+                    </div>
+
+                    <button type="submit" class="auth-button">
+                        <span class="button-text">Create Account</span>
+                        <div class="button-loader" style="display: none;">
+                            <div class="spinner"></div>
+                        </div>
+                    </button>
+
+                    @Html.AntiForgeryToken()
+                </form>
+
+                <div class="auth-footer">
+                    <p>Already have an account? 
+                        <a asp-controller="Account" asp-action="Login" class="auth-link">Sign in</a>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', async function () {
+            // Check if user is already logged in and redirect to users page
+            const isAuthenticated = await authManager.isAuthenticated();
+            if (isAuthenticated) {
+                // User is authenticated, redirect to users page
+                window.location.href = '/users';
+                return;
+            }
+
+                    const form = document.getElementById('registerForm');
+        const usernameInput = document.getElementById('Username');
+        const fullNameInput = document.getElementById('FullName');
+        const emailInput = document.getElementById('Email');
+        const passwordInput = document.getElementById('Password');
+        const confirmPasswordInput = document.getElementById('ConfirmPassword');
+        usernameInput.focus();
+
+        // Add validation event listeners
+        usernameInput.addEventListener('blur', () => validateUsername());
+        fullNameInput.addEventListener('blur', () => validateFullName());
+        emailInput.addEventListener('blur', () => validateEmail());
+        passwordInput.addEventListener('blur', () => validatePassword());
+        confirmPasswordInput.addEventListener('blur', () => validateConfirmPassword());
+        
+        // Clear errors on input
+        usernameInput.addEventListener('input', () => clearValidationError('UsernameError'));
+        fullNameInput.addEventListener('input', () => clearValidationError('FullNameError'));
+        emailInput.addEventListener('input', () => clearValidationError('EmailError'));
+        passwordInput.addEventListener('input', () => clearValidationError('PasswordError'));
+        confirmPasswordInput.addEventListener('input', () => clearValidationError('ConfirmPasswordError'));
+
+            form.addEventListener('submit', async function (e) {
+                e.preventDefault();
+                
+                // Validate all fields before submission
+                const isUsernameValid = validateUsername();
+                const isFullNameValid = validateFullName();
+                const isEmailValid = validateEmail();
+                const isPasswordValid = validatePassword();
+                const isConfirmPasswordValid = validateConfirmPassword();
+                
+                if (!isUsernameValid || !isFullNameValid || !isEmailValid || !isPasswordValid || !isConfirmPasswordValid) {
+                    return;
+                }
+                
+                const submitBtn = form.querySelector('.auth-button');
+                const buttonText = submitBtn.querySelector('.button-text');
+                const buttonLoader = submitBtn.querySelector('.button-loader');
+                
+                // Validate passwords match
+                const password = document.getElementById('Password').value;
+                const confirmPassword = document.getElementById('ConfirmPassword').value;
+                
+                if (password !== confirmPassword) {
+                    showError('Passwords do not match');
+                    return;
+                }
+                
+                // Show loading state
+                submitBtn.disabled = true;
+                buttonText.style.display = 'none';
+                buttonLoader.style.display = 'flex';
+                
+                const payload = {
+                    username: document.getElementById('Username').value,
+                    fullName: document.getElementById('FullName').value,
+                    email: document.getElementById('Email').value,
+                    password: password,
+                    __RequestVerificationToken: document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+                };
+
+                try {
+                    console.log('Sending register request:', payload);
+                    const res = await fetch('/api/auth/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                        credentials: 'include' // Include cookies
+                    });
+                    console.log('Register response status:', res.status);
+
+                    if (!res.ok) {
+                        const err = await res.json().catch(() => ({}));
+                        console.error('Register error:', err);
+                        showError(err.message || 'Registration failed');
+                        return;
+                    }
+
+                    const data = await res.json();
+                    console.log('Register response data:', data);
+
+                    buttonText.textContent = 'Success!';
+                    buttonText.style.display = 'block';
+                    buttonLoader.style.display = 'none';
+
+                    setTimeout(() => {
+                        window.location.href = '/users';
+                    }, 500);
+                    
+                } catch (err) {
+                    console.error('Register network error:', err);
+                    showError('Network error: ' + err.message);
+                } finally {
+                    // Reset button state if there was an error
+                    if (submitBtn.disabled) {
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            buttonText.textContent = 'Create Account';
+                            buttonText.style.display = 'block';
+                            buttonLoader.style.display = 'none';
+                        }, 1000);
+                    }
+                }
+            });
+            
+            function showError(message) {
+                // Remove existing error
+                const existingError = document.querySelector('.auth-error');
+                if (existingError) {
+                    existingError.remove();
+                }
+                
+                // Create new error
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'auth-error';
+                errorDiv.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
+                
+                // Insert after auth-body
+                const authBody = document.querySelector('.auth-body');
+                authBody.insertBefore(errorDiv, authBody.firstChild);
+                
+                // Auto-hide after 5 seconds
+                setTimeout(() => {
+                    errorDiv.remove();
+                }, 5000);
+            }
+        });
+
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const wrapper = input.parentElement;
+            const eyeIcon = wrapper.querySelector('.eye-icon');
+            const eyeOffIcon = wrapper.querySelector('.eye-off-icon');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                eyeIcon.style.display = 'none';
+                eyeOffIcon.style.display = 'block';
+            } else {
+                input.type = 'password';
+                eyeIcon.style.display = 'block';
+                eyeOffIcon.style.display = 'none';
+            }
+        }
+
+        function validateUsername() {
+            const username = document.getElementById('Username').value.trim();
+            
+            if (!username) {
+                showValidationError('UsernameError', 'Username is required');
+                return false;
+            }
+            
+            if (username.length > 50) {
+                showValidationError('UsernameError', 'Username cannot exceed 50 characters');
+                return false;
+            }
+            
+            const usernamePattern = /^[a-zA-Z0-9_]+$/;
+            if (!usernamePattern.test(username)) {
+                showValidationError('UsernameError', 'Username can only contain letters, numbers, and underscores');
+                return false;
+            }
+            
+            clearValidationError('UsernameError');
+            return true;
+        }
+
+        function validateFullName() {
+            const fullName = document.getElementById('FullName').value.trim();
+            
+            if (!fullName) {
+                showValidationError('FullNameError', 'Full name is required');
+                return false;
+            }
+            
+            if (fullName.length > 100) {
+                showValidationError('FullNameError', 'Full name cannot exceed 100 characters');
+                return false;
+            }
+            
+            clearValidationError('FullNameError');
+            return true;
+        }
+
+        function validateEmail() {
+            const email = document.getElementById('Email').value.trim();
+            
+            if (!email) {
+                showValidationError('EmailError', 'Email is required');
+                return false;
+            }
+            
+            if (email.length > 255) {
+                showValidationError('EmailError', 'Email cannot exceed 255 characters');
+                return false;
+            }
+            
+            const emailPattern = /^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/;
+            if (!emailPattern.test(email)) {
+                showValidationError('EmailError', 'Please enter a valid email address');
+                return false;
+            }
+            
+            clearValidationError('EmailError');
+            return true;
+        }
+
+        function validatePassword() {
+            const password = document.getElementById('Password').value;
+            
+            if (!password) {
+                showValidationError('PasswordError', 'Password is required');
+                return false;
+            }
+            
+            if (password.length < 6) {
+                showValidationError('PasswordError', 'Password must be at least 6 characters long');
+                return false;
+            }
+            
+            if (password.length > 100) {
+                showValidationError('PasswordError', 'Password cannot exceed 100 characters');
+                return false;
+            }
+            
+            clearValidationError('PasswordError');
+            return true;
+        }
+
+        function validateConfirmPassword() {
+            const password = document.getElementById('Password').value;
+            const confirmPassword = document.getElementById('ConfirmPassword').value;
+            
+            if (!confirmPassword) {
+                showValidationError('ConfirmPasswordError', 'Please confirm your password');
+                return false;
+            }
+            
+            if (password !== confirmPassword) {
+                showValidationError('ConfirmPasswordError', 'Passwords do not match');
+                return false;
+            }
+            
+            clearValidationError('ConfirmPasswordError');
+            return true;
+        }
+
+        function showValidationError(elementId, message) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.textContent = message;
+            errorElement.style.display = 'block';
+        }
+
+        function clearValidationError(elementId) {
+            const errorElement = document.getElementById(elementId);
+            errorElement.style.display = 'none';
+        }
+    </script>
+}
