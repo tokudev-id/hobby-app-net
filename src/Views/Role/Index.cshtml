@@ -18,6 +18,20 @@
     </div>
 
     <div class="content-area">
+        <!-- Search Bar -->
+        <div class="search-and-filters">
+            <div class="search-container">
+                <input type="text" id="userSearch" placeholder="Search users by name or email..." class="search-input">
+                <button type="button" class="search-clear-btn" id="clearSearch" style="display: none;"
+                    onclick="clearSearch()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+
         <!-- Users with Role Management -->
         <div class="role-management-container">
             <div class="users-with-roles" id="usersWithRoles">
@@ -29,6 +43,10 @@
 
 @section Scripts {
     <script>
+        let allUsers = [];
+        let allRoles = [];
+        let searchTimeout;
+
         document.addEventListener('DOMContentLoaded', async function () {
             // Check if user is admin
             if (!await authManager.requireAdmin()) {
@@ -36,7 +54,71 @@
             }
 
             await loadUsersWithRoles();
+            setupSearchFunctionality();
         });
+
+        function setupSearchFunctionality() {
+            const searchInput = document.getElementById('userSearch');
+            const clearButton = document.getElementById('clearSearch');
+
+            // Add search event listeners
+            searchInput.addEventListener('input', function () {
+                const query = this.value.trim();
+                toggleSearchClearButton(query);
+
+                // Debounce search
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    filterUsers(query);
+                }, 300);
+            });
+
+            searchInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    filterUsers(this.value.trim());
+                }
+            });
+        }
+
+        function toggleSearchClearButton(query) {
+            const clearButton = document.getElementById('clearSearch');
+            if (query.length > 0) {
+                clearButton.style.display = 'flex';
+            } else {
+                clearButton.style.display = 'none';
+            }
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('userSearch');
+            searchInput.value = '';
+            toggleSearchClearButton('');
+            filterUsers('');
+        }
+
+        function filterUsers(searchQuery) {
+            if (!searchQuery) {
+                // Show all users
+                renderUsersWithRoles(allUsers, allRoles);
+                return;
+            }
+
+            // Filter users based on search query
+            const filteredUsers = allUsers.filter(user => {
+                const fullName = (user.fullName || '').toLowerCase();
+                const email = (user.email || '').toLowerCase();
+                const username = (user.username || '').toLowerCase();
+                const query = searchQuery.toLowerCase();
+
+                return fullName.includes(query) ||
+                    email.includes(query) ||
+                    username.includes(query);
+            });
+
+            renderUsersWithRoles(filteredUsers, allRoles);
+        }
 
         async function loadUsersWithRoles() {
             try {
@@ -61,6 +143,10 @@
 
                 const roles = await rolesResponse.json();
 
+                // Store data globally for search functionality
+                allUsers = users;
+                allRoles = roles;
+
                 renderUsersWithRoles(users, roles);
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -73,7 +159,11 @@
             const container = document.getElementById('usersWithRoles');
 
             if (!users.length) {
-                container.innerHTML = '<div class="no-data">No users found</div>';
+                const searchQuery = document.getElementById('userSearch').value.trim();
+                const message = searchQuery ?
+                    `No users found matching "${searchQuery}"` :
+                    'No users found';
+                container.innerHTML = `<div class="no-data">${message}</div>`;
                 return;
             }
 
@@ -84,47 +174,47 @@
                 const userRoles = user.roles || [];
 
                 html += `
-                                                <div class="user-role-card">
-                                                    <div class="user-info-card">
-                                                        <div class="user-avatar-card">
-                                                            <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=random&color=fff&size=50" alt="${user.fullName}">
+                                                    <div class="user-role-card">
+                                                        <div class="user-info-card">
+                                                            <div class="user-avatar-card">
+                                                                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}&background=random&color=fff&size=50" alt="${user.fullName}">
+                                                            </div>
+                                                            <div class="user-details">
+                                                                <h3 class="user-name">${user.fullName}</h3>
+                                                                <p class="user-email">${user.email}</p>
+                                                            </div>
                                                         </div>
-                                                        <div class="user-details">
-                                                            <h3 class="user-name">${user.fullName}</h3>
-                                                            <p class="user-email">${user.email}</p>
-                                                        </div>
-                                                    </div>
 
-                                                    <div class="user-roles">
-                                                        <h4>Current Roles:</h4>
-                                                        <div class="role-tags">
-                                                            ${userRoles.map(role =>
+                                                        <div class="user-roles">
+                                                            <h4>Current Roles:</h4>
+                                                            <div class="role-tags">
+                                                                ${userRoles.map(role =>
                     `<span class="role-tag role-${role.name.toLowerCase()}" data-role-id="${role.id}">
-                                                                    ${role.name}
-                                                                    <button class="remove-role-btn" onclick="unassignRole(${user.id}, ${role.id})" title="Remove role">
-                                                                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                                                        </svg>
-                                                                    </button>
-                                                                </span>`
+                                                                        ${role.name}
+                                                                        <button class="remove-role-btn" onclick="unassignRole(${user.id}, ${role.id})" title="Remove role">
+                                                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                                                            </svg>
+                                                                        </button>
+                                                                    </span>`
                 ).join('')}
-                                                            ${userRoles.length === 0 ? '<span class="no-roles">No roles assigned</span>' : ''}
+                                                                ${userRoles.length === 0 ? '<span class="no-roles">No roles assigned</span>' : ''}
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="role-actions">
+                                                            <select class="role-select" id="roleSelect_${user.id}">
+                                                                <option value="">Select role to assign...</option>
+                                                                ${roles.filter(role => !userRoles.some(ur => ur.id === role.id))
+                        .map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
+                                                            </select>
+                                                            <button class="btn-primary assign-role-btn" onclick="assignRole(${user.id})">
+                                                                Assign Role
+                                                            </button>
                                                         </div>
                                                     </div>
-
-                                                    <div class="role-actions">
-                                                        <select class="role-select" id="roleSelect_${user.id}">
-                                                            <option value="">Select role to assign...</option>
-                                                            ${roles.filter(role => !userRoles.some(ur => ur.id === role.id))
-                        .map(role => `<option value="${role.id}">${role.name}</option>`).join('')}
-                                                        </select>
-                                                        <button class="btn-primary assign-role-btn" onclick="assignRole(${user.id})">
-                                                            Assign Role
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            `;
+                                                `;
             }
 
             html += '</div>';
@@ -156,6 +246,13 @@
                 if (response.ok) {
                     // Reload the data to reflect changes
                     await loadUsersWithRoles();
+
+                    // Maintain current search if active
+                    const currentSearch = document.getElementById('userSearch').value.trim();
+                    if (currentSearch) {
+                        filterUsers(currentSearch);
+                    }
+
                     messageSystem.success('Role assigned successfully');
                 } else {
                     const error = await response.json();
@@ -188,6 +285,13 @@
                 if (response.ok) {
                     // Reload the data to reflect changes
                     await loadUsersWithRoles();
+
+                    // Maintain current search if active
+                    const currentSearch = document.getElementById('userSearch').value.trim();
+                    if (currentSearch) {
+                        filterUsers(currentSearch);
+                    }
+
                     messageSystem.success('Role removed successfully');
                 } else {
                     const error = await response.json();
@@ -204,6 +308,60 @@
 }
 
 <style>
+    .search-and-filters {
+        max-width: 1200px;
+        margin: 0 auto 24px auto;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .search-container {
+        position: relative;
+        flex: 1;
+        min-width: 300px;
+        max-width: 500px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 12px 16px;
+        padding-right: 40px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        background: white;
+        transition: all 0.2s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .search-clear-btn {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        padding: 6px;
+        cursor: pointer;
+        border-radius: 4px;
+        color: #6b7280;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+    }
+
+    .search-clear-btn:hover {
+        background: #f3f4f6;
+        color: #374151;
+    }
+
     .role-management-container {
         max-width: 1200px;
         margin: 0 auto;
